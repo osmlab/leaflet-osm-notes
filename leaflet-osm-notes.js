@@ -52,6 +52,7 @@ module.exports = window.L.LayerGroup.extend({
         map
             .on('viewreset', this._load, this)
             .on('moveend', this._load, this);
+        this._load();
     },
     boundsString: function(map) {
         var b = map.getBounds();
