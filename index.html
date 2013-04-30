@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Leaflet OSM Notes</title>
+        <meta http-equiv='content-type' content='text/html; charset=utf-8' />
+        <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.5.1/leaflet.css" />
+        <!--[if lte IE 8]>
+            <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.5.1/leaflet.ie.css" />
+        <![endif]-->
+        <script src="http://cdn.leafletjs.com/leaflet-0.5.1/leaflet.js"></script>
+        <style>
+        body { max-width: 900px; margin: 20px auto; font: normal 12px/20px sans-serif; }
+        #map { max-width: 900px; height: 500px; }
+        #me {
+            background: darkblue;
+            color:#fff;
+            border-radius:5px;
+            border-width:0;
+            padding:10px;
+            font-size:20px;
+            width: 100%;
+        }
+        </style>
+    </head>
+    <body>
+        <h1>Leaflet OSM Notes</h1>
+        <p>a simple 'plugin' for pulling in OSM notes
+        <a href='https://github.com/osmlab/leaflet-osm-notes'>fork, copy, download,
+            learn about it on GitHub</a>.</p>
+        <div id='map'></div>
+        <script src='leaflet-osm-notes.js'></script>
+        <script>
+            var map = L.map('map').setView([38.8, -77.5], 10);
+            L.tileLayer('http://a.tiles.mapbox.com/v3/tmcw.map-l1m85h7s/{z}/{x}/{y}.png')
+                .addTo(map);
+            var notesLayer = new leafletOsmNotes();
+            notesLayer.addTo(map);
+        </script>
+    </body>
+</html>
