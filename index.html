@@ -30,6 +30,21 @@
         .leaflet-popup-content-wrapper {
             border-radius:0 !important;
         }
+
+        .comment-text {
+            padding:4px;
+            border-top:1px solid #ddd;
+        }
+
+        .comment-meta {
+            padding:4px;
+            font-size:11px;
+            color:#666;
+        }
+
+        .comment-text p {
+            margin:0;
+        }
         </style>
     </head>
     <body>
@@ -42,11 +57,11 @@
         <script>
             var map = L.map('map').setView([38.9, -77.1], 11);
             if (window.devicePixelRatio > 1) {
-                L.tileLayer('http://a.tiles.mapbox.com/v3/tmcw.map-85u1mi88/{z}/{x}/{y}.png', {
+                L.tileLayer('http://a.tiles.mapbox.com/v3/tmcw.map-6s7ux6dj/{z}/{x}/{y}.png', {
                     detectRetina: true
                 }).addTo(map);
             } else {
-                L.tileLayer('http://a.tiles.mapbox.com/v3/tmcw.map-9wqn11gt/{z}/{x}/{y}.png').addTo(map);
+                L.tileLayer('http://a.tiles.mapbox.com/v3/examples.map-20v6611k/{z}/{x}/{y}.png');
             }
             var notesLayer = new leafletOsmNotes();
             notesLayer.addTo(map);

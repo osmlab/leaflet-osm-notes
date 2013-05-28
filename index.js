@@ -1,9 +1,50 @@
-var reqwest = require('reqwest');
-
+var reqwest = require('reqwest'),
+    moment = require('moment');
 
 module.exports = window.L.LayerGroup.extend({
+
     API: 'http://api.openstreetmap.org/api/0.6/notes.json',
-    icon: function(fp) {
+
+    _loadedIds: {},
+
+    onAdd: function(map) {
+        this._map = map;
+        this._loadSuccess = L.bind(loadSuccess, this);
+        this._pointToLayer = L.bind(pointToLayer, this);
+        this.notesLayer = L.geoJson({
+            type: 'FeatureCollection',
+            features: []
+        }, { pointToLayer: this._pointToLayer }).addTo(this);
+
+        map
+            .on('viewreset', this._load, this)
+            .on('moveend', this._load, this);
+
+        this._load();
+
+        function pointToLayer(p) {
+            return L.marker([
+                p.geometry.coordinates[1],
+                p.geometry.coordinates[0]
+            ], {
+                icon: this._icon(p.properties)
+            }).bindPopup('<h1>' + p.properties.title + '</h1>' +
+                '<div>' + p.properties.description + '</div>');
+        }
+
+        function loadSuccess(resp) {
+            for (var i = 0; i < resp.features.length; i++) {
+                if (!this._loadedIds[resp.features[i].properties.id]) {
+                    resp.features[i].properties =
+                        this._template(resp.features[i].properties);
+                    this._loadedIds[resp.features[i].properties.id] = true;
+                    this.notesLayer.addData(resp.features[i]);
+                }
+            }
+        }
+    },
+
+    _icon: function(fp) {
         fp = fp || {};
 
         var sizes = {
@@ -25,70 +66,41 @@ module.exports = window.L.LayerGroup.extend({
             popupAnchor: [0, -sizes[size][1] / 2]
         });
     },
-    onAdd: function(map) {
-        this._map = map;
 
-        this.notesLayer = L.geoJson({
-            type: 'FeatureCollection',
-            features: []
-        }, {
-            pointToLayer: L.bind(function(p) {
-                var marker = L.marker([
-                    p.geometry.coordinates[1],
-                    p.geometry.coordinates[0]
-                ], {
-                    icon: this.icon(p.properties)
-                });
-                marker.bindPopup('<h1>' + p.properties.title + '</h1>' +
-                    '<div>' +
-                    p.properties.description +
-                    '</div>');
-                return marker;
-            }, this)
-        });
-        this.addLayer(this.notesLayer);
-        map
-            .on('viewreset', this._load, this)
-            .on('moveend', this._load, this);
-        this._load();
-    },
-    boundsString: function(map) {
-        var b = map.getBounds();
-        var sw = b.getSouthWest();
-        var ne = b.getNorthEast();
-        return [sw.lng, sw.lat, ne.lng, ne.lat];
-    },
-    template: function(p) {
-        p.title = p.date_created;
+    _template: function(p) {
+        p.title =
+            '<a href="http://www.openstreetmap.org/browse/note/' + p.id + '">Note #' +
+            p.id + '</a>';
         p.description = '';
-        p['marker-color'] = {
-            closed: '11f',
-            open: 'f11'
-        }[p.status];
-        p['marker-symbol'] = {
-            closed: 'circle-stroked',
-            open: 'circle'
-        }[p.status];
+        p['marker-color'] = { closed: '11f', open: 'f11' }[p.status];
+        p['marker-symbol'] = { closed: 'circle-stroked', open: 'circle' }[p.status];
+
         for (var i = 0; i < p.comments.length; i++) {
-            p.description += p.comments[i].date +
-                (p.comments[i].user || 'anon') +
-                p.comments[i].html;
+            var user_link = p.comments[i].user ?
+                ('<a target="_blank" href="' + p.comments[i].user_url + '">' +
+                    p.comments[i].user + '</a>') : 'Anonymous';
+
+            p.description +=
+                '<div class="comment-meta">' +
+                user_link + ' - ' +
+                moment(p.comments[i].date).calendar() + ' ' +
+                '</div> ' + '<div class="comment-text">' +
+                p.comments[i].html + '</div>';
         }
+
         return p;
     },
+
     _load: function(map) {
+        function boundsString(map) {
+            var sw = map.getBounds().getSouthWest(),
+                ne = map.getBounds().getNorthEast();
+            return [sw.lng, sw.lat, ne.lng, ne.lat];
+        }
         reqwest({
-            url: this.API + '?bbox=' + this.boundsString(this._map),
+            url: this.API + '?bbox=' + boundsString(this._map),
             type: 'json',
-            success: L.bind(function(resp) {
-                this.notesLayer.eachLayer(L.bind(function(l) {
-                    this.notesLayer.removeLayer(l);
-                }, this));
-                for (var i = 0; i < resp.features.length; i++) {
-                    resp.features[i].properties = this.template(resp.features[i].properties);
-                }
-                this.notesLayer.addData(resp);
-            }, this),
+            success: this._loadSuccess,
             error: function() { }
         });
     }
