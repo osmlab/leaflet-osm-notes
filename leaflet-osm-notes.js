@@ -5,7 +5,7 @@ var reqwest = require('reqwest'),
 
 module.exports = window.L.LayerGroup.extend({
 
-    API: 'http://api.openstreetmap.org/api/0.6/notes.json',
+    API: 'https://api.openstreetmap.org/api/0.6/notes.json',
 
     _loadedIds: {},
 
@@ -59,7 +59,7 @@ module.exports = window.L.LayerGroup.extend({
             color = (fp['marker-color'] || '7e7e7e').replace('#', '');
 
         return L.icon({
-            iconUrl: 'http://a.tiles.mapbox.com/v3/marker/' +
+            iconUrl: 'https://a.tiles.mapbox.com/v3/marker/' +
                 'pin-' + size.charAt(0) + symbol + '+' + color +
                 // detect and use retina markers, which are x2 resolution
                 ((L.Browser.retina) ? '@2x' : '') + '.png',
@@ -71,7 +71,7 @@ module.exports = window.L.LayerGroup.extend({
 
     _template: function(p) {
         p.title =
-            '<a href="http://www.openstreetmap.org/browse/note/' + p.id + '">Note #' +
+            '<a href="https://www.openstreetmap.org/browse/note/' + p.id + '">Note #' +
             p.id + '</a>';
         p.description = '';
         p['marker-color'] = { closed: '11f', open: 'f11' }[p.status];
